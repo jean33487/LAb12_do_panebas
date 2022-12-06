@@ -1,6 +1,9 @@
 TITLE Nome:Jean Piton RA:22013310
 .MODEL SMALL
 .DATA
+    linha DB 4
+    coluna DB 4
+    offsetlinha DW 8     ;linha x2
     MATRIZ DW ?,?,?,?    ;matriz
             DW ?,?,?,?
             DW ?,?,?,?
@@ -39,8 +42,8 @@ main ENDP
 ;description
 RECEBA PROC
     XOR SI,SI           ;index
-    MOV CL,4            ;loop linha
-    MOV CH,4            ;loop coluna
+    MOV CL,linha            ;loop linha
+    MOV CH,coluna            ;loop coluna
     LOOPlinha:
     LOOPcol:
     MOV AH,1h           ;input
@@ -54,7 +57,7 @@ RECEBA PROC
     MOV AH,2            ;quebra de linha
     MOV DL,10
     INT 21h
-    MOV CH,4
+    MOV CH,coluna
     DEC CL
     JNZ LOOPlinha
     RET
@@ -62,8 +65,8 @@ RECEBA ENDP
 
 ;description
 PRINT PROC
-    MOV CH,4                    ;LOOP1
-    MOV CL,4                    ;LOOP2
+    MOV CH,coluna                    ;LOOP1
+    MOV CL,linha                    ;LOOP2
     XOR BX,BX                   ;index linha
     XOR SI,SI                   ;index coluna
     MOV AH,2h
@@ -76,8 +79,8 @@ PRINT PROC
     DEC CH
     JNZ LOOP1
     XOR SI,SI                   ;index coluna reset
-    ADD BX,8                    ;index linha vai para proxima linha
-    MOV CH,4                    ;loop de coluna reset
+    ADD BX,offsetlinha                    ;index linha vai para proxima linha
+    MOV CH,coluna                    ;loop de coluna reset
     MOV DL,10                   ;quebra de linha
     INT 21h
     DEC CL
@@ -88,27 +91,28 @@ PRINT ENDP
 ;description
 INVERTER PROC
     ;inversão de matriz para matriz2
-    MOV CH,4                ;loop coluna
-    MOV CL,4                ;loop linha
+    MOV CH,coluna                ;loop coluna
+    MOV CL,linha                ;loop linha
     MOV BX,-2               ;inicialização do index da matriz
-    MOV DI,-8               ;inicialização do index da matriz2
+    MOV DI,offsetlinha
+    NEG DI               ;inicialização do index da matriz2
     LOOP4:
     LOOP3:
     ADD BX,2                ;index da matriz anda de 2 em 2
-    ADD DI,8                ;index da matriz invertida anda de 8 em 8
+    ADD DI,offsetlinha                ;index da matriz invertida anda de 8 em 8
     MOV DX, MATRIZ[BX]      ;passagem da matriz para matriz2
     MOV MATRIZ2[DI],DX
     DEC CH
     JNZ LOOP3
     SUB DI,30               ;o index da próxima linha de uma matriz invertida se faz subtraindo 22, mas devido ao ADD 8 no inicio subtraimos 30
-    MOV CH,4
+    MOV CH,coluna
     DEC CL
     JNZ LOOP4
 
     ;mover matriz2 para a matriz
 
-    MOV CH,4                ;loop coluna
-    MOV CL,4                ;loop linha
+    MOV CH,coluna                ;loop coluna
+    MOV CL,linha                ;loop linha
     XOR BX,BX               ;index linha
     XOR SI,SI               ;index coluna
     LOOP6:
@@ -119,8 +123,8 @@ INVERTER PROC
     DEC CH
     JNZ LOOP5
     XOR SI,SI               ;reset do index da coluna
-    ADD BX,8                ;index da linha pula para próxima linha
-    MOV CH,4                ;reset do loop de coluna
+    ADD BX,offsetlinha                ;index da linha pula para próxima linha
+    MOV CH,coluna                ;reset do loop de coluna
     DEC CL
     JNZ LOOP6
     RET
